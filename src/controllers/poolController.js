@@ -10,7 +10,7 @@ export async function pool(req, res) {
     try{
 
         if(body.expireAt === '') {
-            body.expireAt = dayjs().add(30, 'day').format('YYYY-MM-DD HH:mm') //COMO FAZER PARA ADICIONAR 30 DIAS
+            body.expireAt = dayjs().add(30, 'day').format('YYYY-MM-DD HH:mm')
         }
 
         await db.collection('pools').insertOne(body);
