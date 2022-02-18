@@ -1,6 +1,7 @@
 import db from '../db.js';
 import dotenv from 'dotenv';
 import dayjs from 'dayjs';
+
 dotenv.config();
 
 export async function pool(req, res) {
@@ -10,7 +11,7 @@ export async function pool(req, res) {
     try{
 
         if(body.expireAt === '') {
-            body.expireAt = dayjs().add(30, 'day').format('YYYY-MM-DD HH:mm')
+            body.expireAt = dayjs().add(30, 'day').locale('pt-br').format('YYYY-MM-DD HH:mm')
         }
 
         await db.collection('pools').insertOne(body);
