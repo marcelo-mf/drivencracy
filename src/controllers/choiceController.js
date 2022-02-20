@@ -42,5 +42,42 @@ export async function postChoice(req, res) {
     }
 }
 
+export async function vote(req, res) {
+
+    try{
+
+        const choiceId = req.params.id;
+       
+        const choice = await db.collection('choices').findOne({_id: ObjectId(choiceId)});
+        if(!choice){
+            return res.sendStatus(404)
+        }
+
+        const pool = await db.collection('pools').findOne({_id: ObjectId(choice.poolId)});
+        const expired = dayjs().isAfter(pool.expireAt);
+        if(expired) {
+            return res.sendStatus(403)
+        }
+
+        const vote = {poolId: pool._id, poolTitle:pool.title , choiceId: choice._id, choiceTitle: choice.title, votedAt: dayjs().locale('pt-br').format('YYYY-MM-DD HH:mm')};
+        await db.collection('votes').insertOne(vote);
+
+        const votes = choice.votes;
+        if(!votes){
+            await db.collection('choices').updateOne({_id: ObjectId(choiceId)}, {$set: {votes: 1}})
+        } else {
+            await db.collection('choices').updateOne({_id: ObjectId(choiceId)}, {$set: {votes: votes + 1}})
+        }
+
+        res.sendStatus(201)
+        
+    } catch (error){
+
+        console.log(error)
+        res.sendStatus(500)
+
+    }
+}
+
 
 
