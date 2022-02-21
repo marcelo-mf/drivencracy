@@ -76,18 +76,25 @@ export async function getResult(req, res) {
 
        const pool = await db.collection('pools').findOne({_id: ObjectId(poolId)});
        const choices = await db.collection('choices').find({poolId: poolId}).toArray();
-       const votedChoices = choices.filter(choice => typeof choice.votes === 'number');
-       let mostVoted = votedChoices[0].votes;
+       let voteOptions = [];
 
-       for (let i = 0; i < votedChoices.length; i++) {
-
-            if (votedChoices[i].votes > mostVoted) {
-                mostVoted = votedChoices[i].votes
+       for (let i = 0; i < choices.length; i++) {
+            const choice = await db.collection('votes').find({choiceId: choices[i]._id}).toArray();
+            if(choice.length > 0) {
+                voteOptions.push({id: choice[0].choiceId , votes: choice.length});
             }
         }
 
-       const mostVotedChoice = await db.collection('choices').findOne({votes: mostVoted});
-       const result = {id: poolId, title: pool.title, expireAt: pool.expireAt, result: {title: mostVotedChoice.title, votes: mostVotedChoice.votes}}
+       let mostVoted = voteOptions[0].votes;
+       for (let i = 0; i < voteOptions.length; i++) {
+            if (voteOptions[i].votes > mostVoted) {
+                mostVoted = voteOptions[i].votes
+            }
+        }
+
+       const mostVotedOption = voteOptions.find(voteOption => voteOption.votes === mostVoted);
+       const mostVotedChoice = await db.collection('choices').findOne({_id: mostVotedOption.id});
+       const result = {id: poolId, title: pool.title, expireAt: pool.expireAt, result: {title: mostVotedChoice.title, votes: mostVotedOption.votes}}
 
        res.status(201).send(result);
         
@@ -98,6 +105,37 @@ export async function getResult(req, res) {
         
     }
 }
+
+// export async function getResult(req, res) {
+
+//     const poolId = req.params.id;
+
+//     try{
+
+//        const pool = await db.collection('pools').findOne({_id: ObjectId(poolId)});
+//        const choices = await db.collection('choices').find({poolId: poolId}).toArray();
+//        const votedChoices = choices.filter(choice => typeof choice.votes === 'number');
+//        let mostVoted = votedChoices[0].votes;
+
+//        for (let i = 0; i < votedChoices.length; i++) {
+
+//             if (votedChoices[i].votes > mostVoted) {
+//                 mostVoted = votedChoices[i].votes
+//             }
+//         }
+
+//        const mostVotedChoice = await db.collection('choices').findOne({votes: mostVoted});
+//        const result = {id: poolId, title: pool.title, expireAt: pool.expireAt, result: {title: mostVotedChoice.title, votes: mostVotedChoice.votes}}
+
+//        res.status(201).send(result);
+        
+//     } catch (error){
+
+//         console.log(error)
+//         res.sendStatus(500)
+        
+//     }
+// }
 
 
 
