@@ -68,4 +68,36 @@ export async function getChoices(req, res) {
 }
 
 
+export async function getResult(req, res) {
+
+    const poolId = req.params.id;
+
+    try{
+
+       const pool = await db.collection('pools').findOne({_id: ObjectId(poolId)});
+       const choices = await db.collection('choices').find({poolId: poolId}).toArray();
+       const votedChoices = choices.filter(choice => typeof choice.votes === 'number');
+       let mostVoted = votedChoices[0].votes;
+
+       for (let i = 0; i < votedChoices.length; i++) {
+
+            if (votedChoices[i].votes > mostVoted) {
+                mostVoted = votedChoices[i].votes
+            }
+        }
+
+       const mostVotedChoice = await db.collection('choices').findOne({votes: mostVoted});
+       const result = {id: poolId, title: pool.title, expireAt: pool.expireAt, result: {title: mostVotedChoice.title, votes: mostVotedChoice.votes}}
+
+       res.status(201).send(result);
+        
+    } catch (error){
+
+        console.log(error)
+        res.sendStatus(500)
+        
+    }
+}
+
+
 

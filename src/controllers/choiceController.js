@@ -59,7 +59,7 @@ export async function vote(req, res) {
             return res.sendStatus(403)
         }
 
-        const vote = {poolId: pool._id, poolTitle:pool.title , choiceId: choice._id, choiceTitle: choice.title, votedAt: dayjs().locale('pt-br').format('YYYY-MM-DD HH:mm')};
+        const vote = {createdtedAt: dayjs().locale('pt-br').format('YYYY-MM-DD HH:mm'), choiceId: choice._id};
         await db.collection('votes').insertOne(vote);
 
         const votes = choice.votes;
